@@ -24,6 +24,9 @@ assert any(entry.value.endswith(':RepairProBrotherQlPlugin') for entry in plugin
 
 driver = RepairProBrotherQlDriver()
 assert driver.MACHINE_SETTINGS['MODEL']['default'] == 'QL-700'
+assert driver.MACHINE_SETTINGS['LABEL']['default'] == '17x54'
+assert driver.MACHINE_SETTINGS['ROTATION']['default'] == '0'
 assert driver.MACHINE_SETTINGS['API_TOKEN']['protected'] is True
+assert callable(driver.restart_machine)
 
 print('INVENTREE_0_17_14_PLUGIN_IMPORT_OK')

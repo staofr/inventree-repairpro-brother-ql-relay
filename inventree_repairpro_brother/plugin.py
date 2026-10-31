@@ -64,6 +64,20 @@ class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
                 'default': 'QL-700',
                 'required': True,
             },
+            'LABEL': {
+                'name': _('Label Media'),
+                'description': _('Brother DK-11204: 17mm x 54mm die-cut'),
+                'choices': [('17x54', '17mm x 54mm die-cut')],
+                'default': '17x54',
+                'required': True,
+            },
+            'ROTATION': {
+                'name': _('Rotation'),
+                'description': _('Rotate the rendered label counter-clockwise before printing'),
+                'choices': [('0', '0°'), ('90', '90°'), ('180', '180°'), ('270', '270°')],
+                'default': '0',
+                'required': True,
+            },
             'TIMEOUT_SECONDS': {
                 'name': _('Request Timeout'),
                 'description': _('Maximum time to wait for the local relay'),
@@ -85,6 +99,10 @@ class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
         """Mark the configured relay machine as ready for queued printing."""
         machine.set_status(LabelPrinterMachine.MACHINE_STATUS.CONNECTED)
 
+    def restart_machine(self, machine: BaseMachineType):
+        """Restore the ready state after InvenTree resets the machine status."""
+        self.init_machine(machine)
+
     def print_label(
         self,
         machine: LabelPrinterMachine,
@@ -102,6 +120,10 @@ class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
         if label_image is None:
             raise RuntimeError('InvenTree did not render a PNG label')
 
+        rotation = int(machine.get_setting('ROTATION', 'D') or 0)
+        if rotation:
+            label_image = label_image.rotate(rotation, expand=True, fillcolor='white')
+
         image_stream = io.BytesIO()
         label_image.save(image_stream, format='PNG')
 
@@ -109,6 +131,7 @@ class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
         api_token = str(machine.get_setting('API_TOKEN', 'D') or '').strip()
         printer_name = str(machine.get_setting('PRINTER_NAME', 'D') or '').strip()
         model = str(machine.get_setting('MODEL', 'D') or '').strip()
+        label_media = str(machine.get_setting('LABEL', 'D') or '').strip()
         timeout = int(machine.get_setting('TIMEOUT_SECONDS', 'D') or 30)
         verify_tls = bool(machine.get_setting('VERIFY_TLS', 'D'))
 
@@ -124,6 +147,7 @@ class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
             'jobId': job_id,
             'printerName': printer_name,
             'model': model,
+            'labelMedia': label_media,
             'copies': copies,
             'imagePngBase64': base64.b64encode(image_stream.getvalue()).decode('ascii'),
         }
