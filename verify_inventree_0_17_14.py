@@ -51,10 +51,17 @@ class OutputProbe:
 output = OutputProbe()
 plugin = RepairProBrotherQlPlugin()
 
+
+class ReloadedDriverProbe:
+    """Stand-in for the same driver class loaded by another plugin-registry pass."""
+
+    SLUG = driver.SLUG
+
+
 with (
     patch(
         'inventree_repairpro_brother.plugin.get_machine_and_driver',
-        return_value=(object(), driver),
+        return_value=(object(), ReloadedDriverProbe()),
     ),
     patch.object(
         InvenTreeLabelPlugin,

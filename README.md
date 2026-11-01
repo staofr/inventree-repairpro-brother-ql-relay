@@ -26,8 +26,9 @@ In **InvenTree > Settings > Plugins > Install Plugin**, use:
 After installation, enable **RepairPro Brother QL Relay** and create a Label
 Printer machine using **RepairPro Brother QL-700 Relay Driver**.
 
-Version `0.1.2` preserves the `0.1.1` machine and relay behavior and fixes the
-InvenTree `LabelOutput` completion state after a successful synchronous print.
+Version `0.1.3` preserves the `0.1.2` machine and relay behavior, fixes the
+printing-form validation after an InvenTree plugin-registry reload, and keeps
+the `LabelOutput` completion fix after a successful synchronous print.
 Select **RepairPro Brother QL Relay** as the label-printing plugin, then select
 the machine using **RepairPro Brother QL-700 Relay Driver**. The fix is scoped
 to that driver and does not patch InvenTree core or other printing plugins.

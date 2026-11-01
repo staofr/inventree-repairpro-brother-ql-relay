@@ -38,9 +38,14 @@ class RepairProBrotherQlPlugin(LabelPrintingMixin, InvenTreePlugin):
     def print_labels(self, label, output, items, request, **kwargs):
         """Delegate printing and mark this exact output complete after success."""
         printing_options = kwargs.get('printing_options', {})
-        _, driver = get_machine_and_driver(printing_options.get('machine', ''))
+        machine, driver = get_machine_and_driver(
+            printing_options.get('machine', '')
+        )
 
-        if not isinstance(driver, RepairProBrotherQlDriver):
+        if (
+            machine is None
+            or getattr(driver, 'SLUG', None) != RepairProBrotherQlDriver.SLUG
+        ):
             raise ValidationError(
                 _('Select a machine using the RepairPro Brother QL-700 driver')
             )

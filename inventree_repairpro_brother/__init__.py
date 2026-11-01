@@ -1,3 +1,3 @@
-PLUGIN_VERSION = '0.1.2'
+PLUGIN_VERSION = '0.1.3'
 
 __all__ = ['PLUGIN_VERSION']

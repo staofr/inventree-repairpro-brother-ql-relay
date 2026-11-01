@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='inventree-repairpro-brother-ql-relay',
-    version='0.1.2',
+    version='0.1.3',
     description='InvenTree 0.17.14 machine driver for the RepairPro Brother QL-700 relay',
     packages=find_packages(),
     include_package_data=True,
