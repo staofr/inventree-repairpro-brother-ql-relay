@@ -8,15 +8,21 @@ import requests
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from plugin import InvenTreePlugin
+from plugin.builtin.labels.inventree_machine import (
+    InvenTreeLabelPlugin,
+    get_machine_and_driver,
+)
 from plugin.machine import BaseMachineType
 from plugin.machine.machine_types import LabelPrinterBaseDriver, LabelPrinterMachine
+from plugin.mixins import LabelPrintingMixin
 from report.models import LabelTemplate
+from rest_framework.exceptions import ValidationError
 
 from . import PLUGIN_VERSION
 
 
-class RepairProBrotherQlPlugin(InvenTreePlugin):
-    """Register the RepairPro Brother QL-700 machine driver."""
+class RepairProBrotherQlPlugin(LabelPrintingMixin, InvenTreePlugin):
+    """Register the QL-700 driver and own its label-output lifecycle."""
 
     AUTHOR = 'MASTER SUN'
     DESCRIPTION = 'Send InvenTree labels to a remote RepairPro Brother QL-700 relay'
@@ -26,6 +32,28 @@ class RepairProBrotherQlPlugin(InvenTreePlugin):
     NAME = 'RepairPro Brother QL Relay'
     SLUG = 'repairpro-brother-ql-relay'
     TITLE = 'RepairPro Brother QL-700 Relay'
+
+    PrintingOptionsSerializer = InvenTreeLabelPlugin.PrintingOptionsSerializer
+
+    def print_labels(self, label, output, items, request, **kwargs):
+        """Delegate printing and mark this exact output complete after success."""
+        printing_options = kwargs.get('printing_options', {})
+        _, driver = get_machine_and_driver(printing_options.get('machine', ''))
+
+        if not isinstance(driver, RepairProBrotherQlDriver):
+            raise ValidationError(
+                _('Select a machine using the RepairPro Brother QL-700 driver')
+            )
+
+        response = InvenTreeLabelPlugin.print_labels(
+            self, label, output, items, request, **kwargs
+        )
+
+        output.progress = 100
+        output.complete = True
+        output.save(update_fields=['progress', 'complete'])
+
+        return response
 
 
 class RepairProBrotherQlDriver(LabelPrinterBaseDriver):
